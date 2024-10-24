@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35222.181
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlgebricEquationSystemSolver", "AlgebricEquationSystemSolver\AlgebricEquationSystemSolver.csproj", "{CBA76B36-C08A-445A-A6D2-D46CE2367DBF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CBA76B36-C08A-445A-A6D2-D46CE2367DBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBA76B36-C08A-445A-A6D2-D46CE2367DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBA76B36-C08A-445A-A6D2-D46CE2367DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBA76B36-C08A-445A-A6D2-D46CE2367DBF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8CB87154-D549-476F-8C09-9B889CBAE38B}
+	EndGlobalSection
+EndGlobal

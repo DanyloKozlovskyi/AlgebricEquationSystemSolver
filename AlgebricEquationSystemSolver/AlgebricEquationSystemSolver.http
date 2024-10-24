@@ -1,0 +1,6 @@
+@AlgebricEquationSystemSolver_HostAddress = http://localhost:5278
+
+GET {{AlgebricEquationSystemSolver_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
