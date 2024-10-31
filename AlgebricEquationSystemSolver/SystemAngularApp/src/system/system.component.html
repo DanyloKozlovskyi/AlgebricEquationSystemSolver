@@ -1,0 +1,69 @@
+<h2>Polynomial</h2>
+
+<div class="flex">
+  <!-- left box begins-->
+  <div class="flex-1">
+
+    <form [formGroup]="postRowsForm">
+      <select id="rows" formControlName="rows" (change)="resizePostForm()">
+        <option value="3" selected="selected">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+    </form>
+
+    <div class="table-container">
+      
+      <table class="table" [ngClass]="{'w-20': rows === 2, 'w-50': rows === 3,
+             'w-60': rows === 4, 'w-70': rows === 5, 'w-90': rows === 6 }" [formGroup]="postParametersForm">
+
+        <thead>
+          <tr>
+            <th>Enter system of equations</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr formArrayName="parameters" class="table-row">
+            <td *ngFor="let row of postParametersFormArray.controls; let i = index" [ngClass]="{'table-data-2': rows === 2, 'table-data-3': rows === 3,
+             'table-data-4': rows === 4, 'table-data-5': rows === 5, 'table-data-6': rows === 6 }">
+              <div *ngIf="i !== 0" [formGroupName]="i">
+                <input type="text" formControlName="value" class="form-input-parameter" value="{{row}}" />
+                <span class="text-grey flex-text-x">x</span>
+                <sup class="text-grey flex-text" *ngIf="i !== 1">{{i}}</sup>
+                <span class="text-grey flex-text" *ngIf="i != rows - 1">+</span>
+              </div>
+              <div *ngIf="i === 0" [formGroupName]="i">
+                <input type="text" formControlName="value" class="form-input-parameter" value="{{row}}" />
+                <span class="text-grey flex-text">+</span>
+              </div>
+            </td>
+          </tr>
+          <tr class="table-row">
+            <td style="width:200px">
+              <button class="button button-blue-back" (click)="postParametersSubmitted()">
+                Solve
+              </button>
+            </td>
+          </tr>
+          <app-loading [isLoading]="loading"></app-loading>
+          <tr formArrayName="roots" class="table-row">
+            <td style="width:200px" *ngFor="let root of postRootsFormArray.controls; let i = index">
+              <span class="text-grey">
+                x
+                <sub class="text-grey">{{i + 1}}</sub>
+                =
+              </span>
+              <span class="text-grey">{{root.value.value}}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- right box begins-->
+ 
+  <!-- right box ends-->
+</div>

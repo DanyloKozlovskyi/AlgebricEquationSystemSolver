@@ -4,6 +4,7 @@ using AlgebricEquationSystemSolver.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AlgebricEquationSystemSolver.DataAccess.Migrations
 {
     [DbContext(typeof(AlgebricEquationSystemDbContext))]
-    partial class AlgebricEquationSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241030135806_AddUserRole_")]
+    partial class AddUserRole_
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,9 +34,6 @@ namespace AlgebricEquationSystemSolver.DataAccess.Migrations
                     b.Property<string>("Parameters")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Roots")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Systems");
@@ -42,14 +42,12 @@ namespace AlgebricEquationSystemSolver.DataAccess.Migrations
                         new
                         {
                             Id = new Guid("ec1a1b75-11d5-4ec6-9d52-3ddae2eac040"),
-                            Parameters = "[-90,1,-10,-100,9,1]",
-                            Roots = "[-15.43,6.55,-0.98]"
+                            Parameters = "[1,2,3,4,5,6,7,8,9,10,11,12]"
                         },
                         new
                         {
                             Id = new Guid("239f25ad-6f48-4c01-afb9-66e39313c534"),
-                            Parameters = "[15,1,2,3,-1]",
-                            Roots = "[-1.59,3.85]"
+                            Parameters = "[10,20,30,40,50,60,72,84,95,10,101,102]"
                         });
                 });
 
