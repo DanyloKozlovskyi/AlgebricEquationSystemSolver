@@ -1,5 +1,7 @@
 ﻿using AlgebricEquationSystemSolver.DataAccess.Models;
 using AlgebricEquationSystemSolver.DataAccess.Models.Configurations;
+using CitiesManager.DataAccess.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -9,9 +11,9 @@ using System.Threading.Tasks;
 
 namespace AlgebricEquationSystemSolver.DataAccess
 {
-	public class AlgebricEquationSystemDbContext : DbContext
+	public class AlgebricEquationSystemDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 	{
-		public DbSet<AlgebricEquationSystem> Equations { get; set; }
+		public DbSet<AlgebricEquationSystem> Systems { get; set; }
 
 		public AlgebricEquationSystemDbContext(DbContextOptions options) : base(options)
 		{
