@@ -5,11 +5,12 @@ import { CommonModule } from '@angular/common';
 import { AccountService } from '../services/account.service';
 import { SystemService } from '../services/system.service';
 import { LoadingComponent } from '../loading/loading.component';
+import { DisableControlDirective } from '../directives/disabled-control.directive';
 
 @Component({
   selector: 'app-system',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, LoadingComponent],
+  imports: [CommonModule, ReactiveFormsModule, LoadingComponent, DisableControlDirective],
   templateUrl: './system.component.html',
   styleUrl: './system.component.css'
 })
@@ -26,6 +27,9 @@ export class SystemComponent {
   putSystemForm: FormGroup;
   //new
   loading: boolean = false;
+
+  editId: string | null = null;
+
 
   constructor(private systemService: SystemService, private accountService: AccountService) {
     this.postSystemForm = new FormGroup({
@@ -106,10 +110,8 @@ export class SystemComponent {
     let system = new System(null, this.parameters, null);
 
     this.postSystemSubmitted(system);
-
-    
   }
-
+  
   get putSystemFormArray(): FormArray {
     return this.putSystemForm.get("systems") as FormArray;
   }
@@ -119,12 +121,38 @@ export class SystemComponent {
       next: (response: System[]) => {
         this.systems = response;
 
+        console.log(this.systems);
+        console.log(this.putSystemFormArray);
+
+        var parameters = [];
+        for (var i = 0; i < this.systems.length; i++) {
+          var str = '';
+          var currentLength = this.systems.at(i)?.parameters?.length;
+          if (currentLength != undefined) {
+            for (var j = 0; j < currentLength; j++) {
+               
+            }
+          }
+        }
+
+        this.putSystemFormArray.clear();
+
         this.systems.forEach(system => {
           this.putSystemFormArray.push(new FormGroup({
             id: new FormControl(system.id, [Validators.required]),
-            name: new FormControl({ value: system.parameters, disabled: true }, [Validators.required])
+            parameters: new FormArray([]),
           }));
-        })
+        });
+
+        console.log(this.systems);
+
+        this.systems.forEach((system: System, ind) => {
+          system.parameters?.forEach((param) => {
+            this.putSystem_ParametersControl(ind).push(new FormGroup({
+              value: new FormControl(param, [Validators.required])
+          }))});
+        });
+        console.log(this.putSystemFormArray);
       },
 
       error: (error: any) => {
@@ -139,6 +167,10 @@ export class SystemComponent {
   }
 
   // removed postCity_NameControl
+  public putSystem_ParametersControl(i: number): FormArray {
+    let currentFormGroup = this.putSystemFormArray.controls[i] as FormGroup;
+    return currentFormGroup.controls['parameters'] as FormArray;
+  }
 
   public postSystemSubmitted(system: System) {
     this.isPostSystemFormSubmitted = true;
@@ -161,7 +193,7 @@ export class SystemComponent {
         //new
         this.loading = false;
 
-        //this.loadSystems();
+        this.loadSystems();
         //this.cities.push(response);
       },
 
@@ -173,9 +205,9 @@ export class SystemComponent {
     });
   }
 
-  /*public editClicked(System: System) {
+  public editClicked(System: System) {
     this.editId = System.id;
-  }*/
+  }
 
   /*public updateClicked(i: number) {
     this.systemService.putSystem(this.putSystemFormArray.controls[i].value).subscribe({

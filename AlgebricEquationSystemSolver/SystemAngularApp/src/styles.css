@@ -817,6 +817,10 @@ a.button-link:link, a.button-link:visited {
   flex-basis: 16%;
 }
 
+.form-span-parameter{
+    width: 40px;
+}
+
 .form-input-parameter {
   padding: 8px 10px;
   font-size: 105%;
@@ -838,3 +842,17 @@ a.button-link:link, a.button-link:visited {
     margin:auto 1px auto 0px;
 }
 
+
+.table-row-left {
+  /*width: 15%;
+  margin: auto 5% auto 5%;*/
+  height: max-content;
+  width: inherit;
+  display: flex;
+  justify-content: left;
+}
+
+  .table-row-left td:last-child {
+    text-align: right; /* Align the last <td> to the right */
+    margin-left: auto;
+  }

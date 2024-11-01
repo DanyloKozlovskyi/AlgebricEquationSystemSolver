@@ -39,7 +39,7 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 		{
 			return await Task.Run(() =>
 			{
-				Thread.Sleep(5000);
+				Thread.Sleep(2000);
 				return mapper.Map<AlgebricEquationSystem>(source);
 			}
 			);
@@ -68,7 +68,7 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 
 		public async Task<ICollection<AlgebricEquationSystem>> GetSystems()
 		{
-			return await dbContext.Systems.ToListAsync();
+			return dbContext.Systems.AsEnumerable().TakeLast(5).ToList();
 		}
 
 		public async Task<AlgebricEquationSystem?> GetSystemById(Guid? id)
