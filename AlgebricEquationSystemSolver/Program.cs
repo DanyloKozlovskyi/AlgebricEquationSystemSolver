@@ -19,7 +19,10 @@ builder.Services.AddControllers(options =>
 	options.Filters.Add(new AuthorizeFilter(policy));
 });
 
-builder.Services.AddDbContext<AlgebricEquationSystemDbContext>();
+builder.Services.AddDbContext<AlgebricEquationSystemDbContext>(options =>
+{
+	//options.UseNpgsql("Host=system.database;Port=5432;Database=system;Username=postgres;Password=postgres;");
+});
 
 builder.Services.AddScoped<IAlgebricEquationSystemService, AlgebricEquationSystemService>();
 builder.Services.AddTransient<IJwtService, JwtService>();
@@ -42,7 +45,7 @@ builder.Services.AddCors(options =>
 	options.AddDefaultPolicy(policyBuilder =>
 	{
 		policyBuilder
-	 .WithOrigins("http://localhost:4200")
+	 .WithOrigins("http://localhost:4200", "http://localhost:4201")
 	 .WithHeaders("Authorization", "origin", "accept", "content-type")
 	 .WithMethods("GET", "POST", "PUT", "DELETE");
 	});
@@ -74,6 +77,8 @@ builder.Services.AddAuthorization(options =>
 });
 
 var app = builder.Build();
+
+app.ApplyMigrations();
 
 app.UseHsts(); // enable https
 app.UseHttpsRedirection();
