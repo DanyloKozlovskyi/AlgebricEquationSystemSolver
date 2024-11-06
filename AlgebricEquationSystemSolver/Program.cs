@@ -45,9 +45,9 @@ builder.Services.AddCors(options =>
 	options.AddDefaultPolicy(policyBuilder =>
 	{
 		policyBuilder
-	 .WithOrigins("http://localhost:4200", "http://localhost:4201")
-	 .WithHeaders("Authorization", "origin", "accept", "content-type")
-	 .WithMethods("GET", "POST", "PUT", "DELETE");
+	 .WithOrigins("http://localhost:4200", "http://localhost:4201", "https://localhost:7221")
+	 .AllowAnyHeader()
+	 .AllowAnyMethod();
 	});
 });
 

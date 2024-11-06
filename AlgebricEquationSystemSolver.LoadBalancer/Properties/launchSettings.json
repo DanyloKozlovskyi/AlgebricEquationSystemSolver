@@ -18,7 +18,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "dotnetRunMessages": true,
-      "applicationUrl": "https://localhost:7220;http://localhost:5278"
+      "applicationUrl": "https://localhost:7221;http://localhost:5278"
     },
     "IIS Express": {
       "commandName": "IISExpress",
@@ -33,7 +33,7 @@
       "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
       "environmentVariables": {
-        "ASPNETCORE_HTTPS_PORTS": "8081",
+        "ASPNETCORE_HTTPS_PORTS": "5001",
         "ASPNETCORE_HTTP_PORTS": "8080"
       },
       "publishAllPorts": true,
