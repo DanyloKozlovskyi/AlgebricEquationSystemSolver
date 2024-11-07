@@ -87,7 +87,7 @@ namespace AlgebricEquationSystemSolver.WEBApi.Controllers
 		// POST: api/AlgebricEquationSystem
 		// To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
 		[HttpPost]
-		public async Task<IActionResult> PostAlgebricEquationSystem(AlgebricEquationSystemCreate algebricEquationSystemDto)
+		public async Task<IActionResult> PostAlgebricEquationSystem(AlgebricEquationSystem algebricEquationSystemDto)
 		{
 			var algebricEquationSystem = await systemService.AddSystem(algebricEquationSystemDto).ConfigureAwait(false);
 

@@ -17,6 +17,9 @@ namespace AlgebricEquationSystemSolver.DataAccess
 	public class AlgebricEquationSystemDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, Guid>
 	{
 		public DbSet<AlgebricEquationSystem> Systems { get; set; }
+		public DbSet<TaskCalculation> TaskCalculations { get; set; }
+		public DbSet<CancellationTokenCalculation> CancellationTokenCalculations { get; set; }
+
 
 		public AlgebricEquationSystemDbContext(DbContextOptions options) : base(options)
 		{
@@ -36,18 +39,15 @@ namespace AlgebricEquationSystemSolver.DataAccess
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 		{
-
-
 			// set connection string
 			//optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=AlgebricEquationSystemDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+			base.OnConfiguring(optionsBuilder);
 
-			optionsBuilder.UseNpgsql("Host=system.database;Port=5432;Database=system;Username=postgres;Password=postgres", builder =>
+			optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=system_;Username=postgres;Password=postgres;", builder =>
 			{
 				builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
 
 			});
-
-			base.OnConfiguring(optionsBuilder);
 		}
 	}
 	public static class MigrationExtensions

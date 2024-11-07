@@ -6,6 +6,7 @@ using AutoMapper;
 using Elfie.Serialization;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace AlgebricEquationSystemSolver.WEBApi.Services
 {
@@ -24,7 +25,7 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 			mapper = map.CreateMapper();
 		}
 
-		public async Task<AlgebricEquationSystem> AddSystem(AlgebricEquationSystemCreate? systemCreate)
+		public async Task<AlgebricEquationSystem> AddSystem(AlgebricEquationSystem? systemCreate)
 		{
 			if (systemCreate == null)
 				throw new ArgumentNullException(nameof(systemCreate));
@@ -35,12 +36,24 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 			return system;
 		}
 
-		public async Task<AlgebricEquationSystem> MapWithAsync(AlgebricEquationSystemCreate source)
+		public async Task<AlgebricEquationSystem> MapWithAsync(AlgebricEquationSystem source)
 		{
-			return await Task.Run(() =>
+			if (source == null) throw new ArgumentNullException(nameof(source.Parameters));
+			return await Task.Run(async () =>
 			{
-				Thread.Sleep(2000);
-				return mapper.Map<AlgebricEquationSystem>(source);
+				for (int i = 0; i < 100; i++)
+				{
+					var cancelationToken = await dbContext.CancellationTokenCalculations.FirstOrDefaultAsync(ct => ct.TaskId == source.Id);
+					if (cancelationToken != null && cancelationToken.IsCanceled) // Check for cancellation at the start of each job
+					{
+						throw new OperationCanceledException();
+					}
+					Thread.Sleep(20);
+				}
+
+				source.Roots = AlgebricEquationSystemCreate.FindRoots(source.Parameters);
+				//return mapper.Map<AlgebricEquationSystem>(source);
+				return source;
 			}
 			);
 		}

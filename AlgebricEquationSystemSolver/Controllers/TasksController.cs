@@ -15,81 +15,75 @@ namespace LoadBalancer.WebAPI.Controllers
 	[Route("api/tasks")]
 	public class TasksController : ControllerBase
 	{
-		private readonly AlgebricEquationSystemDbContext _context;
+		private readonly AlgebricEquationSystemDbContext dbContext;
 		private readonly AlgebricEquationSystemService systemService;
-		private readonly IHubContext<TaskHub> _hubContext;
+		//private readonly IHubContext<TaskHub> _hubContext;
 		private const int MAX_UNKNOWN_LIMIT = 10;
 
-		public TasksController(AlgebricEquationSystemDbContext context, AlgebricEquationSystemService equationsService, IHubContext<TaskHub> hubContext)
+		public TasksController(AlgebricEquationSystemDbContext context, AlgebricEquationSystemService equationsService/*, IHubContext<TaskHub> hubContext*/)
 		{
-			_context = context;
+			dbContext = context;
 			systemService = equationsService;
-			_hubContext = hubContext;
+			//_hubContext = hubContext;
 
-			systemService.OnProgressUpdate += (progress) => SendProgressUpdate(progress);
+			//systemService.OnProgressUpdate += (progress) => SendProgressUpdate(progress);
 		}
 
 		[HttpPost("start")]
-		public async Task<ActionResult<TaskState>> StartTask([FromBody] TaskRequest request)
+		public async Task<ActionResult<TaskCalculation>> StartTask([FromBody] AlgebricEquationSystem request)
 		{
-			if (request.A.Length != request.b.Length)
-			{
-				return BadRequest("Matrix A and vector b dimensions do not match.");
-			}
+			var taskCalculation = new TaskCalculation { SystemId = request.Id, System = request, IsCompleted = false };
+			dbContext.TaskCalculations.Add(taskCalculation);
+			await dbContext.SaveChangesAsync();
 
-			if (request.A.GetLength(0) > MAX_UNKNOWN_LIMIT)
-			{
-				return BadRequest("Exceeded maximum number of unknowns.");
-			}
-
-			var taskStatus = new TaskState { State = "In Progress", Progress = 0 };
-			_context.TaskStates.Add(taskStatus);
-			await _context.SaveChangesAsync();
-
-			double[] result;
+			AlgebricEquationSystem result;
 			try
 			{
-				result = systemService.Solve(request.A, request.b);
-				taskStatus.State = "Completed";
-				taskStatus.Result = string.Join(", ", result);
+				result = await systemService.MapWithAsync(request);
+				//taskCalculation.State = "Completed";
+				//taskCalculation.Result = string.Join(", ", result);
+				taskCalculation.System = result;
 			}
-			catch (Exception ex)
+			catch (OperationCanceledException ex)
 			{
-				taskStatus.State = "Error: " + ex.Message;
-				return StatusCode(500, taskStatus);
+				//taskCalculation.State = "Error: " + ex.Message;
+				return StatusCode(500, taskCalculation);
 			}
 
-			taskStatus.Progress = 100;
-			await _context.SaveChangesAsync();
+			//taskCalculation.Progress = 100;
+			await dbContext.SaveChangesAsync();
 
-			return Ok(taskStatus);
+			return Ok(taskCalculation);
 		}
 
-		private async void SendProgressUpdate(int progress)
+		/*private async void SendProgressUpdate(int progress)
 		{
-			var taskId = _context.TaskStates.OrderByDescending(ts => ts.Id).FirstOrDefault()?.Id;
+			var taskId = dbContext.Tasks.OrderByDescending(ts => ts.Id).FirstOrDefault()?.Id;
 			if (taskId.HasValue)
 			{
 				await _hubContext.Clients.All.SendAsync("ReceiveTaskProgress", taskId.Value, progress);
 			}
-		}
+		}*/
 
 		[HttpPost("cancel/{id}")]
-		public async Task<IActionResult> CancelTask(int id)
+		public async Task<IActionResult> CancelTask(Guid id)
 		{
-			var task = await _context.TaskStates.FindAsync(id);
+			var task = await dbContext.TaskCalculations.FindAsync(id);
 			if (task == null)
 				return NotFound();
 
-			task.State = "Canceled";
-			await _context.SaveChangesAsync();
+			//task.State = "Canceled";
+			CancellationTokenCalculation? token = await dbContext.CancellationTokenCalculations.FirstOrDefaultAsync(x => x.Id == id);
+			task.IsCompleted = false;
+			token.IsCanceled = true;
+			await dbContext.SaveChangesAsync();
 			return Ok("Task canceled.");
 		}
 
 		[HttpGet("history")]
-		public async Task<ActionResult<List<TaskState>>> GetTaskHistory()
+		public async Task<ActionResult<List<TaskCalculation>>> GetTaskHistory()
 		{
-			var history = await _context.TaskStates.ToListAsync();
+			var history = await dbContext.TaskCalculations.ToListAsync();
 			return Ok(history);
 		}
 	}

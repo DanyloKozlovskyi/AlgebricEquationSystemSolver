@@ -69,8 +69,6 @@ namespace CitiesManager.WebAPI.Controllers
 
 			string errorMessage = string.Join(" | ", result.Errors.Select(e => e.Description));
 			return Problem(errorMessage);
-
-
 		}
 
 		[HttpGet]

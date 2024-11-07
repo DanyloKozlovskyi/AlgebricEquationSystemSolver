@@ -6,7 +6,7 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 {
 	public interface IAlgebricEquationSystemService
 	{
-		Task<AlgebricEquationSystem> AddSystem(AlgebricEquationSystemCreate? systemCreate);
+		Task<AlgebricEquationSystem> AddSystem(AlgebricEquationSystem? systemCreate);
 		Task<ICollection<AlgebricEquationSystem>> GetSystems();
 		Task<AlgebricEquationSystem?> GetSystemById(Guid? id);
 		Task<ICollection<AlgebricEquationSystem>> GetFilteredSystems(Expression<Func<AlgebricEquationSystem, bool>> predicate);
