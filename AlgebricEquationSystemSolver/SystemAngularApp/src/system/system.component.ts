@@ -26,10 +26,12 @@ export class SystemComponent {
   isPostParametersSubmitted: boolean = false;
   systems: System[] = [];
   putSystemForm: FormGroup;
-  //new
   loading: boolean = false;
 
   editId: string | null = null;
+
+  tasksInRun: number = 0;
+  maxTasks: number = 2;
 
 
   constructor(private systemService: SystemService, private accountService: AccountService) {
@@ -92,8 +94,14 @@ export class SystemComponent {
   }
 
   public async postParametersSubmitted() {
+    console.log(this.tasksInRun)
+    if (this.tasksInRun >= this.maxTasks) {
+      alert(`maximum number of tasks was reached, unable to start more tasks`);
+      console.log("alert reached");
+      return;
+    }
+    this.tasksInRun++;
     this.parameters = [];
-    //new
     this.loading = true;
 
     //console.log(`this.postParametersFormArray.length --- ${this.postParametersFormArray.length}`);
@@ -196,6 +204,7 @@ export class SystemComponent {
     this.systemService.postSystem(system).subscribe({
       next: (response: System | null) => {
         if (response != null) {
+          this.tasksInRun--;
           this.roots = response.roots;
           console.log("this.roots: " + this.roots);
 
@@ -209,7 +218,6 @@ export class SystemComponent {
             });
           }
 
-          //new
           this.loading = false;
 
           this.loadSystems();
@@ -270,6 +278,7 @@ export class SystemComponent {
       this.systemService.terminateSystem(system.id).subscribe({
         next: (response: string) => {
           console.log(`terminate response: ${response}`);
+          this.tasksInRun--;
           //this.editId = null;
 
           this.putSystemFormArray.removeAt(i);
