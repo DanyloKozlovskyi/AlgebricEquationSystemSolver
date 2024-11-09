@@ -9,7 +9,28 @@ services:
     ports:
         - "5000:5000"
         - "5001:5001"
+    
+  algebricequationsystemsolver.webapi1:
+    image: ${DOCKER_REGISTRY-}algebricequationsystemsolverwebapi
+    container_name: system.api1
+    restart: always
+    build: 
+      dockerfile: AlgebricEquationSystemSolver/Dockerfile
+      
+    ports:
+        - "6000:6000"
+        - "6001:6001"
 
+  algebricequationsystemsolver.webapi2:
+    image: ${DOCKER_REGISTRY-}algebricequationsystemsolverwebapi
+    container_name: system.api2
+    restart: always
+    build: 
+      dockerfile: AlgebricEquationSystemSolver/Dockerfile
+      
+    ports:
+        - "7000:7000"
+        - "7001:7001"
     
   system.database:  
      image: postgres:16
