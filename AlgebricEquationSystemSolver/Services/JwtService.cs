@@ -38,7 +38,8 @@ namespace CitiesManager.WebAPI.Services
 					//JwtRegisteredClaimNames.Jti - unique id for the token
 					new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
 					//JwtRegisteredClaimNames.Iat - issued at
-					new Claim(JwtRegisteredClaimNames.Iat, DateTime.UtcNow.ToString()),
+					//couldn't authorize if iat is string it must be int
+					new Claim(JwtRegisteredClaimNames.Iat, DateTimeOffset.Now.ToUnixTimeSeconds().ToString()),
 					// further fields are optional
 					new Claim(ClaimTypes.NameIdentifier, user.Email),
 					new Claim(ClaimTypes.Name, user.PersonName),
@@ -63,6 +64,8 @@ namespace CitiesManager.WebAPI.Services
 			//possible error here if key size is less than 256 bytes 
 			token = tokenHandler.WriteToken(tokenGenerator);
 
+			Console.WriteLine(Convert.ToInt32(configuration["Jwt:EXPIRATION_MINUTES"]));
+
 			return new AuthenticationResponse()
 			{
 				Token = token,
@@ -70,7 +73,8 @@ namespace CitiesManager.WebAPI.Services
 				PersonName = user.PersonName,
 				Expiration = expiration,
 				RefreshToken = GenerateRefreshToken(),
-				RefreshTokenExpirationDateTime = DateTime.Now.AddMinutes(Convert.ToInt32(configuration["RefreshToken:EXPIRATION_MINUTES"]))
+				//*here I changed Utc to UtcNow
+				RefreshTokenExpirationDateTime = DateTime.UtcNow.AddMinutes(Convert.ToInt32(configuration["Jwt:EXPIRATION_MINUTES"]))
 			};
 		}
 

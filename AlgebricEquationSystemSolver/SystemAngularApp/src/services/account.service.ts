@@ -4,7 +4,7 @@ import { RegisterUser } from '../models/register-user';
 import { Observable } from 'rxjs';
 import { LoginUser } from '../models/login-user';
 
-const API_BASE_URL: string = "https://localhost:7220/api/account/";
+const API_BASE_URL: string = "https://localhost:7221/api/account/";
 
 @Injectable({
   providedIn: 'root'

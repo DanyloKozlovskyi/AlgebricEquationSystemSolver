@@ -1,0 +1,47 @@
+services:
+  algebricequationsystemsolver.webapi:
+    image: ${DOCKER_REGISTRY-}algebricequationsystemsolverwebapi
+    container_name: system.api
+    restart: always
+    build: 
+      dockerfile: AlgebricEquationSystemSolver/Dockerfile
+      
+    ports:
+        - "5000:5000"
+        - "5001:5001"
+    
+  algebricequationsystemsolver.webapi1:
+    image: ${DOCKER_REGISTRY-}algebricequationsystemsolverwebapi
+    container_name: system.api1
+    restart: always
+    build: 
+      dockerfile: AlgebricEquationSystemSolver/Dockerfile
+      
+    ports:
+        - "6000:6000"
+        - "6001:6001"
+
+  algebricequationsystemsolver.webapi2:
+    image: ${DOCKER_REGISTRY-}algebricequationsystemsolverwebapi
+    container_name: system.api2
+    restart: always
+    build: 
+      dockerfile: AlgebricEquationSystemSolver/Dockerfile
+      
+    ports:
+        - "7000:7000"
+        - "7001:7001"
+    
+  system.database:  
+     image: postgres:16
+     container_name: system.database
+     restart: always
+     environment:
+        - POSTGRES_DB=system
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+     volumes:
+        - ./.containers/system-db:/var/lib/postgresql@16/data
+     ports:
+        - 5433:5432
+

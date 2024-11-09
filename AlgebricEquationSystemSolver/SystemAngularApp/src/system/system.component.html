@@ -18,8 +18,8 @@
           <tr [formGroupName]="i" *ngFor="let system of systems; let i = index" class="table-row-left">
             <td style="width:5%">{{i+1}}</td>
 
-            <td  formArrayName="parameters" *ngFor="let row of putSystem_ParametersControl(i).controls; let j = index" class="table-data-6">
-              <div *ngIf="j !== 0" >
+            <td formArrayName="parameters" *ngFor="let row of putSystem_ParametersControl(i).controls; let j = index" class="table-data-6">
+              <div *ngIf="j !== 0">
                 <span type="text" class="form-span-parameter">{{row.value.value}}</span>
                 <span class="text-grey flex-text-x">x</span>
                 <sup class="text-grey flex-text" *ngIf="j !== 1">{{j}}</sup>
@@ -31,9 +31,14 @@
               </div>
             </td>
             <!--it was 200px there-->
-            <td style="width:50px">
-
+            <td style="width:50px" *ngIf="system.isCompleted">
               <button class="button button-red-back ml" (click)="deleteClicked(system, i)" *ngIf="system.id != editId" type="button">Delete</button>
+              <button class="button button-blue-back ml" (click)="checkRoots(i)" *ngIf="system.id != editId" type="button">Check</button>
+
+            </td>
+            <td style="width:50px" *ngIf="!system.isCompleted">
+              <!--<app-loading [isLoading]="loading"></app-loading>-->
+              <button class="button button-red-back ml" (click)="terminateClicked(system, i)" *ngIf="system.id != editId" type="button">Terminate</button>
 
             </td>
           </tr>
@@ -92,7 +97,7 @@
                 </button>
               </td>
             </tr>
-            <app-loading [isLoading]="loading"></app-loading>
+            <!--<app-loading [isLoading]="loading"></app-loading>-->
             <tr formArrayName="roots" class="table-row">
               <td style="width:200px" *ngFor="let root of postRootsFormArray.controls; let i = index">
                 <span class="text-grey">

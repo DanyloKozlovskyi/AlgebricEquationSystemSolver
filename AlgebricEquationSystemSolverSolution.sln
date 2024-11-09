@@ -5,7 +5,11 @@ VisualStudioVersion = 17.11.35222.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlgebricEquationSystemSolver.WEBApi", "AlgebricEquationSystemSolver\AlgebricEquationSystemSolver.WEBApi.csproj", "{CBA76B36-C08A-445A-A6D2-D46CE2367DBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlgebricEquationSystemSolver.DataAccess", "AlgebricEquationSystemSolver.DataAccess\AlgebricEquationSystemSolver.DataAccess.csproj", "{FD571837-6343-484F-BADF-B0EB0272A22C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlgebricEquationSystemSolver.DataAccess", "AlgebricEquationSystemSolver.DataAccess\AlgebricEquationSystemSolver.DataAccess.csproj", "{FD571837-6343-484F-BADF-B0EB0272A22C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AlgebricEquationSystemSolver.LoadBalancer", "AlgebricEquationSystemSolver.LoadBalancer\AlgebricEquationSystemSolver.LoadBalancer.csproj", "{81F70F8C-0ADF-48C4-B9BA-F5EB2C668FF9}"
+EndProject
+Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{D78D9447-D48C-4258-B4EB-8D0E7788B8B2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +25,14 @@ Global
 		{FD571837-6343-484F-BADF-B0EB0272A22C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD571837-6343-484F-BADF-B0EB0272A22C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD571837-6343-484F-BADF-B0EB0272A22C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{81F70F8C-0ADF-48C4-B9BA-F5EB2C668FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{81F70F8C-0ADF-48C4-B9BA-F5EB2C668FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{81F70F8C-0ADF-48C4-B9BA-F5EB2C668FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{81F70F8C-0ADF-48C4-B9BA-F5EB2C668FF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D78D9447-D48C-4258-B4EB-8D0E7788B8B2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D78D9447-D48C-4258-B4EB-8D0E7788B8B2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D78D9447-D48C-4258-B4EB-8D0E7788B8B2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D78D9447-D48C-4258-B4EB-8D0E7788B8B2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

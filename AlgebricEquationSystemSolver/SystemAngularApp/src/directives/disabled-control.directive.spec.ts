@@ -1,8 +1,8 @@
-import { DisabledControlDirective } from './disabled-control.directive';
+import { DisableControlDirective } from './disabled-control.directive';
 
-describe('DisabledControlDirective', () => {
+describe('DisableControlDirective', () => {
   it('should create an instance', () => {
-    const directive = new DisabledControlDirective();
+    const directive = new DisableControlDirective();
     expect(directive).toBeTruthy();
   });
 });

@@ -19,7 +19,10 @@ builder.Services.AddControllers(options =>
 	options.Filters.Add(new AuthorizeFilter(policy));
 });
 
-builder.Services.AddDbContext<AlgebricEquationSystemDbContext>();
+builder.Services.AddDbContext<AlgebricEquationSystemDbContext>(options =>
+{
+	//options.UseNpgsql("Host=system.database;Port=5432;Database=system;Username=postgres;Password=postgres;");
+});
 
 builder.Services.AddScoped<IAlgebricEquationSystemService, AlgebricEquationSystemService>();
 builder.Services.AddTransient<IJwtService, JwtService>();
@@ -42,9 +45,9 @@ builder.Services.AddCors(options =>
 	options.AddDefaultPolicy(policyBuilder =>
 	{
 		policyBuilder
-	 .WithOrigins("http://localhost:4200")
-	 .WithHeaders("Authorization", "origin", "accept", "content-type")
-	 .WithMethods("GET", "POST", "PUT", "DELETE");
+	 .WithOrigins("https://localhost:4200")
+	 .AllowAnyHeader()
+	 .AllowAnyMethod();
 	});
 });
 
@@ -68,23 +71,23 @@ builder.Services.AddAuthentication(options =>
 
 });
 
-builder.Services.AddAuthorization(options =>
-{
-
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-app.UseHsts(); // enable https
+app.ApplyMigrations();
+// enable https
+app.UseHsts();
+
+// getting error with authorization cause UseRouting after UseAuthorization
+app.UseRouting();
+
+app.UseCors();
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
+//UseAuthorization should be imported after UseCors() and UseHttpsRedirection() in order to avoid XMLHttpRequest has been blocked by Cors policy
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseRouting();
-app.UseCors();
 
 app.MapControllers();
 
