@@ -1,5 +1,7 @@
-﻿using AlgebricEquationSystemSolver.DataAccess.DTO;
+﻿using AlgebricEquationSystemSolver.DataAccess;
+using AlgebricEquationSystemSolver.DataAccess.DTO;
 using AlgebricEquationSystemSolver.DataAccess.Models;
+using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
 namespace AlgebricEquationSystemSolver.WEBApi.Services
@@ -13,5 +15,7 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 		Task<AlgebricEquationSystem> UpdateSystem(AlgebricEquationSystem system);
 		Task<bool> DeleteSystem(Guid? id);
 		Task<bool> SystemExists(Guid id);
+
+		Task<AlgebricEquationSystem> MapWithAsync(AlgebricEquationSystem source, AlgebricEquationSystemDbContext context);
 	}
 }

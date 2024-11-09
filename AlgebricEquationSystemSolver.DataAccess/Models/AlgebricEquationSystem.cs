@@ -14,5 +14,6 @@ namespace AlgebricEquationSystemSolver.DataAccess.Models
 		public Guid Id { get; set; }
 		public List<double>? Parameters { get; set; }
 		public List<double>? Roots { get; set; }
+		public bool IsCompleted { get; set; } = false;
 	}
 }

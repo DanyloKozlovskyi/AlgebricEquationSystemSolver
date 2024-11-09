@@ -14,25 +14,34 @@ export class SystemService {
 
   }
   public getSystems(): Observable<System[]> {
+    console.log("localStorage['token']: " + localStorage['token']);
     let headers = new HttpHeaders();
-    headers = headers.append("Authorization", `Bearer ${localStorage['token']}`);
-    return this.httpClient.get<System[]>(`${API_BASE_URL}algebricEquationSystem`, { headers: headers });
+    headers = headers.set("Authorization", `Bearer ${localStorage['token']}`);
+    return this.httpClient.get<System[]>(`${API_BASE_URL}tasks`, { headers: headers });
   }
-  public postSystem(System: System): Observable<System> {
+  public postSystem(System: System): Observable<System | null> {
+    console.log(System);
     let headers = new HttpHeaders();
     headers = headers.append("Authorization", `Bearer ${localStorage['token']}`);
-    return this.httpClient.post<System>(`${API_BASE_URL}algebricEquationSystem`, System, { headers: headers });
+    return this.httpClient.post<System | null>(`${API_BASE_URL}tasks`, System, { headers: headers });
   }
   public putSystem(System: System): Observable<string> {
     let headers = new HttpHeaders();
     headers = headers.append("Authorization", `Bearer ${localStorage['token']}`);
 
-    return this.httpClient.put<string>(`${API_BASE_URL}algebricEquationSystem/${System.id}`, System, { headers: headers });
+    return this.httpClient.put<string>(`${API_BASE_URL}tasks/${System.id}`, System, { headers: headers });
   }
   public deleteSystem(id: string | null): Observable<string> {
     let headers = new HttpHeaders();
     headers = headers.append("Authorization", `Bearer ${localStorage['token']}`);
 
-    return this.httpClient.delete<string>(`${API_BASE_URL}algebricEquationSystem/${id}`, { headers: headers });
+    return this.httpClient.delete<string>(`${API_BASE_URL}tasks/${id}`, { headers: headers });
+  }
+  public terminateSystem(id: string | null): Observable<string> {
+    let headers = new HttpHeaders();
+    headers = headers.append("Authorization", `Bearer ${localStorage['token']}`);
+    console.log("terminateSystem");
+    console.log(localStorage['token']);
+    return this.httpClient.delete<string>(`${API_BASE_URL}tasks/terminate/${id}`, { headers: headers });
   }
 }

@@ -45,7 +45,7 @@ builder.Services.AddCors(options =>
 	options.AddDefaultPolicy(policyBuilder =>
 	{
 		policyBuilder
-	 .WithOrigins("http://localhost:4200", "http://localhost:4201")
+	 .WithOrigins("https://localhost:4200")
 	 .AllowAnyHeader()
 	 .AllowAnyMethod();
 	});
@@ -71,25 +71,23 @@ builder.Services.AddAuthentication(options =>
 
 });
 
-builder.Services.AddAuthorization(options =>
-{
-
-});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
 app.ApplyMigrations();
+// enable https
+app.UseHsts();
 
-app.UseHsts(); // enable https
+// getting error with authorization cause UseRouting after UseAuthorization
+app.UseRouting();
+
+app.UseCors();
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
+//UseAuthorization should be imported after UseCors() and UseHttpsRedirection() in order to avoid XMLHttpRequest has been blocked by Cors policy
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseRouting();
-app.UseCors();
 
 app.MapControllers();
 

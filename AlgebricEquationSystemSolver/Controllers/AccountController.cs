@@ -108,7 +108,14 @@ namespace CitiesManager.WebAPI.Controllers
 				user.RefreshToken = authenticationResponse.RefreshToken;
 
 				user.RefreshTokenExpirationDateTime = authenticationResponse.RefreshTokenExpirationDateTime;
-				await userManager.UpdateAsync(user);
+				try
+				{
+					await userManager.UpdateAsync(user);
+				}
+				catch (Exception exc)
+				{
+					Console.WriteLine($"await userManager.UpdateAsync(user): {exc.Message}");
+				}
 
 
 				return Ok(authenticationResponse);
@@ -146,7 +153,7 @@ namespace CitiesManager.WebAPI.Controllers
 
 			ApplicationUser? user = await userManager.FindByEmailAsync(email);
 
-			if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpirationDateTime <= DateTime.Now)
+			if (user == null || user.RefreshToken != refreshToken || user.RefreshTokenExpirationDateTime <= DateTime.UtcNow)
 			{
 				return BadRequest("Invalid refresh token");
 			}

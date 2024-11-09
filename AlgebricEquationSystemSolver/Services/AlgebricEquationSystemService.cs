@@ -30,32 +30,35 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 			if (systemCreate == null)
 				throw new ArgumentNullException(nameof(systemCreate));
 
-			AlgebricEquationSystem system = await MapWithAsync(systemCreate);
+			AlgebricEquationSystem system = await MapWithAsync(systemCreate, dbContext);
 			await dbContext.AddAsync(system);
 			await dbContext.SaveChangesAsync();
 			return system;
 		}
 
-		public async Task<AlgebricEquationSystem> MapWithAsync(AlgebricEquationSystem source)
+		public async Task<AlgebricEquationSystem> MapWithAsync(AlgebricEquationSystem source, AlgebricEquationSystemDbContext context)
+
 		{
 			if (source == null) throw new ArgumentNullException(nameof(source.Parameters));
-			return await Task.Run(async () =>
+			await Task.Run(async () =>
 			{
-				for (int i = 0; i < 100; i++)
+				for (int i = 0; i < 20; i++)
 				{
-					var cancelationToken = await dbContext.CancellationTokenCalculations.FirstOrDefaultAsync(ct => ct.TaskId == source.Id);
-					if (cancelationToken != null && cancelationToken.IsCanceled) // Check for cancellation at the start of each job
+					Thread.Sleep(500);
+
+					var cancelationToken = await context.CancellationTokenCalculations.FirstOrDefaultAsync(ct => ct.TaskId == source.Id);
+					await context.Entry(cancelationToken).ReloadAsync();
+					// Check for cancellation at the start of each job
+					if (cancelationToken != null && cancelationToken.IsCanceled)
 					{
 						throw new OperationCanceledException();
 					}
-					Thread.Sleep(20);
 				}
+			});
+			source.Roots = AlgebricEquationSystemCreate.FindRoots(source.Parameters);
+			source.IsCompleted = true;
 
-				source.Roots = AlgebricEquationSystemCreate.FindRoots(source.Parameters);
-				//return mapper.Map<AlgebricEquationSystem>(source);
-				return source;
-			}
-			);
+			return source;
 		}
 
 		public async Task<bool> DeleteSystem(Guid? id)

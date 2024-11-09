@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using AlgebricEquationSystemSolver.DataAccess;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -12,9 +13,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AlgebricEquationSystemSolver.DataAccess.Migrations
 {
     [DbContext(typeof(AlgebricEquationSystemDbContext))]
-    partial class AlgebricEquationSystemDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241108095531_AddIsCompletedColumnAlgebricSystem")]
+    partial class AddIsCompletedColumnAlgebricSystem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

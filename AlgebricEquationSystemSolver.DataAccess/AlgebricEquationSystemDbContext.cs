@@ -43,11 +43,17 @@ namespace AlgebricEquationSystemSolver.DataAccess
 			//optionsBuilder.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=AlgebricEquationSystemDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
 			base.OnConfiguring(optionsBuilder);
 
-			optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=system_;Username=postgres;Password=postgres;", builder =>
+			try
 			{
-				builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
-
-			});
+				optionsBuilder.UseNpgsql("Host=system.database;Port=5432;Database=system;Username=postgres;Password=postgres;", builder =>
+				{
+					builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+				});
+			}
+			catch (Exception exc)
+			{
+				Console.WriteLine(exc.Message);
+			}
 		}
 	}
 	public static class MigrationExtensions
@@ -57,8 +63,15 @@ namespace AlgebricEquationSystemSolver.DataAccess
 			using IServiceScope scope = app.ApplicationServices.CreateScope();
 
 			using AlgebricEquationSystemDbContext dbContext = scope.ServiceProvider.GetRequiredService<AlgebricEquationSystemDbContext>();
+			try
+			{
+				dbContext.Database.Migrate();
+			}
+			catch (Exception exc)
+			{
+				Console.WriteLine(exc.Message);
+			}
 
-			dbContext.Database.Migrate();
 		}
 	}
 }

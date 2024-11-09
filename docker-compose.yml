@@ -10,8 +10,6 @@ services:
         - "5000:5000"
         - "5001:5001"
 
-    networks:
-        - my-network
     
   system.database:  
      image: postgres:16
@@ -26,10 +24,3 @@ services:
      ports:
         - 5433:5432
 
-     networks:
-        - my-network
-
-
-networks:
-  my-network:
-    driver: bridge

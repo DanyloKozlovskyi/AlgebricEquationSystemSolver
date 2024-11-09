@@ -2,58 +2,92 @@
 using AlgebricEquationSystemSolver.DataAccess.DTO;
 using AlgebricEquationSystemSolver.DataAccess.Models;
 using AlgebricEquationSystemSolver.WEBApi.Services;
+using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace LoadBalancer.WebAPI.Controllers
+namespace AlgebricEquationSystemSolver.WebAPI.Controllers
 {
 	[ApiController]
 	[Authorize]
-	[Route("api/tasks")]
+	[Route("api/[controller]")]
 	public class TasksController : ControllerBase
 	{
 		private readonly AlgebricEquationSystemDbContext dbContext;
-		private readonly AlgebricEquationSystemService systemService;
-		//private readonly IHubContext<TaskHub> _hubContext;
-		private const int MAX_UNKNOWN_LIMIT = 10;
+		private readonly IAlgebricEquationSystemService systemService;
+		private readonly IServiceProvider serviceProvider;
 
-		public TasksController(AlgebricEquationSystemDbContext context, AlgebricEquationSystemService equationsService/*, IHubContext<TaskHub> hubContext*/)
+		public TasksController(AlgebricEquationSystemDbContext context, IAlgebricEquationSystemService equationsService, IServiceProvider provider)
 		{
 			dbContext = context;
 			systemService = equationsService;
+			serviceProvider = provider;
 			//_hubContext = hubContext;
 
 			//systemService.OnProgressUpdate += (progress) => SendProgressUpdate(progress);
 		}
 
-		[HttpPost("start")]
-		public async Task<ActionResult<TaskCalculation>> StartTask([FromBody] AlgebricEquationSystem request)
+		[HttpPost]
+		public async Task<ActionResult<AlgebricEquationSystem>> StartTask([FromBody] AlgebricEquationSystem request)
 		{
-			var taskCalculation = new TaskCalculation { SystemId = request.Id, System = request, IsCompleted = false };
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+			if (string.IsNullOrEmpty(userId))
+			{
+				return Unauthorized("User not authorized.");
+			}
+
+			var taskCalculation = new TaskCalculation
+			{
+				Id = request.Id,
+				SystemId = request.Id,
+				System = request,
+				IsCompleted = false,
+				UserId = Guid.Parse(userId)
+			};
+
+			var cancellationTokenCalculation = new CancellationTokenCalculation()
+			{
+				Id = request.Id,
+				TaskId = request.Id,
+				SystemId = request.Id,
+				System = request,
+				IsCanceled = false
+			};
+
+
 			dbContext.TaskCalculations.Add(taskCalculation);
+			dbContext.CancellationTokenCalculations.Add(cancellationTokenCalculation);
 			await dbContext.SaveChangesAsync();
 
 			AlgebricEquationSystem result;
-			try
+			using (var scope = serviceProvider.CreateScope())
 			{
-				result = await systemService.MapWithAsync(request);
-				//taskCalculation.State = "Completed";
-				//taskCalculation.Result = string.Join(", ", result);
-				taskCalculation.System = result;
-			}
-			catch (OperationCanceledException ex)
-			{
-				//taskCalculation.State = "Error: " + ex.Message;
-				return StatusCode(500, taskCalculation);
-			}
+				var scopedContext = scope.ServiceProvider.GetRequiredService<AlgebricEquationSystemDbContext>();
 
+				try
+				{
+					result = await systemService.MapWithAsync(request, scopedContext);
+					//taskCalculation.State = "Completed";
+					//taskCalculation.Result = string.Join(", ", result);
+					taskCalculation.System = result;
+				}
+				catch (OperationCanceledException ex)
+				{
+					//taskCalculation.State = "Error: " + ex.Message;
+					dbContext.TaskCalculations.Remove(taskCalculation);
+					await dbContext.SaveChangesAsync();
+					return Ok(null);
+				}
+			}
 			//taskCalculation.Progress = 100;
 			await dbContext.SaveChangesAsync();
 
-			return Ok(taskCalculation);
+			return Ok(result);
 		}
 
 		/*private async void SendProgressUpdate(int progress)
@@ -65,10 +99,10 @@ namespace LoadBalancer.WebAPI.Controllers
 			}
 		}*/
 
-		[HttpPost("cancel/{id}")]
-		public async Task<IActionResult> CancelTask(Guid id)
+		[HttpDelete("terminate/{id}")]
+		public async Task<IActionResult> TerminateTask(Guid id)
 		{
-			var task = await dbContext.TaskCalculations.FindAsync(id);
+			var task = await dbContext.TaskCalculations.FirstOrDefaultAsync(x => x.Id == id);
 			if (task == null)
 				return NotFound();
 
@@ -77,7 +111,7 @@ namespace LoadBalancer.WebAPI.Controllers
 			task.IsCompleted = false;
 			token.IsCanceled = true;
 			await dbContext.SaveChangesAsync();
-			return Ok("Task canceled.");
+			return Ok();
 		}
 
 		[HttpGet("history")]
@@ -85,6 +119,39 @@ namespace LoadBalancer.WebAPI.Controllers
 		{
 			var history = await dbContext.TaskCalculations.ToListAsync();
 			return Ok(history);
+		}
+
+		[HttpGet]
+		public async Task<ActionResult<IEnumerable<TaskCalculation>>> Get()
+		{
+			var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+			if (string.IsNullOrEmpty(userId))
+			{
+				return Unauthorized("User not authorized.");
+			}
+
+			Guid userGuid = Guid.Parse(userId);
+			var tasks = await dbContext.TaskCalculations.Include(x => x.User).Include(x => x.System).Where(x => x.UserId == userGuid).ToListAsync();
+
+			var systems = await Task.Run(() =>
+			{
+				return tasks.Select(x => x.System);
+			});
+
+			return Ok(systems);
+		}
+
+		[HttpDelete("{id}")]
+		public async Task<IActionResult> DeleteAlgebricEquationSystem(Guid id)
+		{
+			var systemDeleted = await systemService.DeleteSystem(id).ConfigureAwait(false);
+			if (systemDeleted == false)
+			{
+				return NotFound();
+			}
+
+			return NoContent();
 		}
 	}
 }

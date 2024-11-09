@@ -6,6 +6,7 @@ import { AccountService } from '../services/account.service';
 import { SystemService } from '../services/system.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { DisableControlDirective } from '../directives/disabled-control.directive';
+import { v4 as uuid } from 'uuid'
 
 @Component({
   selector: 'app-system',
@@ -107,7 +108,9 @@ export class SystemComponent {
 
     console.log(this.parameters);
 
-    let system = new System(null, this.parameters, null);
+    ////////
+
+    let system = new System(uuid(), this.parameters, null);
 
     this.postSystemSubmitted(system);
   }
@@ -163,6 +166,7 @@ export class SystemComponent {
     });
   }
   ngOnInit() {
+    this.refreshClicked();
     this.loadSystems();
   }
 
@@ -174,26 +178,42 @@ export class SystemComponent {
 
   public postSystemSubmitted(system: System) {
     this.isPostSystemFormSubmitted = true;
+
+    this.systems.push(system);
+    
+    this.putSystemFormArray.push(new FormGroup({
+        id: new FormControl(system.id, [Validators.required]),
+        parameters: new FormArray([]),
+      }));
+    
+    system.parameters?.forEach((param) => {
+      this.putSystem_ParametersControl(this.systems.length - 1).push(new FormGroup({
+          value: new FormControl(param, [Validators.required])
+        }))
+    });
+
     //this.postSystemForm.value
     this.systemService.postSystem(system).subscribe({
-      next: (response: System) => {
-        this.roots = response.roots;
-        console.log("this.roots: " + this.roots);
+      next: (response: System | null) => {
+        if (response != null) {
+          this.roots = response.roots;
+          console.log("this.roots: " + this.roots);
 
-        this.postRootsFormArray.clear();
+          this.postRootsFormArray.clear();
 
-        if (this.roots != null) {
-          this.roots.forEach((param) => {
-            this.postRootsFormArray.push(new FormGroup({
-              value: new FormControl(param, [Validators.required])
-            }));
-          });
+          if (this.roots != null) {
+            this.roots.forEach((param) => {
+              this.postRootsFormArray.push(new FormGroup({
+                value: new FormControl(param, [Validators.required])
+              }));
+            });
+          }
+
+          //new
+          this.loading = false;
+
+          this.loadSystems();
         }
-
-        //new
-        this.loading = false;
-
-        this.loadSystems();
         //this.cities.push(response);
       },
 
@@ -227,9 +247,9 @@ export class SystemComponent {
     })
   }*/
 
-  public deleteClicked(System: System, i: number): void {
-    if (confirm(`Are you sure to delete this System: ${System.parameters}?`)) {
-      this.systemService.deleteSystem(System.id).subscribe({
+  public deleteClicked(system: System, i: number): void {
+    if (confirm(`Are you sure to delete this System: ${system.parameters}?`)) {
+      this.systemService.deleteSystem(system.id).subscribe({
         next: (response: string) => {
           console.log(response);
           //this.editId = null;
@@ -241,7 +261,24 @@ export class SystemComponent {
           console.log(error);
         },
         complete: () => { }
+      })
+    }
+  }
 
+  public terminateClicked(system: System, i: number): void {
+    if (confirm(`Are you sure to terminate this System: ${system.parameters}?`)) {
+      this.systemService.terminateSystem(system.id).subscribe({
+        next: (response: string) => {
+          console.log(`terminate response: ${response}`);
+          //this.editId = null;
+
+          this.putSystemFormArray.removeAt(i);
+          this.systems.splice(i, 1);
+        },
+        error: (error: any) => {
+          console.log(error);
+        },
+        complete: () => { }
       })
     }
   }
@@ -258,5 +295,19 @@ export class SystemComponent {
       },
       complete: () => { }
     });
+  }
+
+  public checkRoots(i: number): void {
+    this.roots = this.systems.at(i)?.roots as number[];
+    
+    this.postRootsFormArray.clear();
+
+    if (this.roots != null) {
+      this.roots.forEach((param) => {
+        this.postRootsFormArray.push(new FormGroup({
+          value: new FormControl(param, [Validators.required])
+        }));
+      });
+    }
   }
 }
