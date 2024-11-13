@@ -11,6 +11,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace AlgebricEquationSystemSolver.DataAccess
 {
@@ -35,6 +36,15 @@ namespace AlgebricEquationSystemSolver.DataAccess
 			base.OnModelCreating(modelBuilder);
 
 			modelBuilder.ApplyConfiguration(new AlgebricEquationSystemConfiguration());
+			modelBuilder.Entity<TaskCalculation>()
+				.HasOne(c => c.System);
+			modelBuilder.Entity<TaskCalculation>()
+				.HasOne(c => c.User);
+
+			modelBuilder.Entity<CancellationTokenCalculation>()
+				.HasOne(tc => tc.TaskCalculation);
+			modelBuilder.Entity<CancellationTokenCalculation>()
+				.HasOne(tc => tc.System);
 		}
 
 		protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

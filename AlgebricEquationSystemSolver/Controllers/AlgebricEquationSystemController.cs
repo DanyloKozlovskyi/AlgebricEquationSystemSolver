@@ -89,9 +89,11 @@ namespace AlgebricEquationSystemSolver.WEBApi.Controllers
 		[HttpPost]
 		public async Task<IActionResult> PostAlgebricEquationSystem(AlgebricEquationSystem algebricEquationSystemDto)
 		{
-			var algebricEquationSystem = await systemService.AddSystem(algebricEquationSystemDto).ConfigureAwait(false);
+			await systemService.AddSystem(algebricEquationSystemDto).ConfigureAwait(false);
 
-			return CreatedAtAction("GetAlgebricEquationSystem", new { id = algebricEquationSystem.Id }, algebricEquationSystem);
+			//var algebricEquationSystem = systemService.GetSystemById()
+			//return CreatedAtAction("GetAlgebricEquationSystem", new { id = algebricEquationSystem.Id }, algebricEquationSystem);
+			return Ok();
 		}
 
 		// DELETE: api/AlgebricEquationSystem/5

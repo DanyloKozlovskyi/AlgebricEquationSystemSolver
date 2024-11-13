@@ -7,6 +7,7 @@ import { SystemService } from '../services/system.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { DisableControlDirective } from '../directives/disabled-control.directive';
 import { v4 as uuid } from 'uuid'
+import { Subject, interval, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-system',
@@ -32,6 +33,7 @@ export class SystemComponent {
 
   tasksInRun: number = 0;
   maxTasks: number = 2;
+  destroy$ = new Subject<void>();
 
 
   constructor(private systemService: SystemService, private accountService: AccountService) {
@@ -202,58 +204,70 @@ export class SystemComponent {
 
     //this.postSystemForm.value
     this.systemService.postSystem(system).subscribe({
-      next: (response: System | null) => {
-        if (response != null) {
-          this.tasksInRun--;
-          this.roots = response.roots;
-          console.log("this.roots: " + this.roots);
-
-          this.postRootsFormArray.clear();
-
-          if (this.roots != null) {
-            this.roots.forEach((param) => {
-              this.postRootsFormArray.push(new FormGroup({
-                value: new FormControl(param, [Validators.required])
-              }));
-            });
-          }
-
-          this.loading = false;
-
-          this.loadSystems();
+      next: (response: string | null) => {
+        if (system.id != null) {
+          this.monitorProgress(system.id);
         }
-        //this.cities.push(response);
       },
 
       error: (error: any) => {
         console.log(error);
       },
-
       complete: () => { }
     });
+  }
+
+  private getTaskProgress(system: System): void {
+    this.systemService.getTaskProgress(system.id).subscribe({
+
+     next: completed => {
+      let isCompleted = completed
+
+      if (isCompleted === true) {
+        this.tasksInRun--;
+        this.loadSystems();
+        system.destroy$.next();
+        }
+      },
+      error: (error: any) => {
+        system.destroy$.next();
+        console.log(error);
+      },
+      complete: () => {
+
+      }
+    });
+  }
+
+  private monitorProgress(id: string): void {
+    let system = this.systems.find(x => x.id === id);
+    if (system === undefined) {
+      alert("Some error happened");
+      return;
+    }
+      
+    this.getTaskProgress(system);
+    interval(1000)
+      .pipe(takeUntil(system.destroy$))
+      .subscribe({
+        next: () => {
+          if (system == undefined) {
+            return;
+          }
+          this.getTaskProgress(system);
+        },
+        error: (message: any) => {
+          system?.destroy$.next();
+          console.log(message);
+        },
+        complete: () => {
+        }
+      });
   }
 
   public editClicked(System: System) {
     this.editId = System.id;
   }
-
-  /*public updateClicked(i: number) {
-    this.systemService.putSystem(this.putSystemFormArray.controls[i].value).subscribe({
-      next: (response: string) => {
-        console.log(response);
-        console.log(this.putSystemFormArray.controls[i].value);
-
-        this.editId = null;
-        this.putSystemFormArray.controls[i].reset(this.putSystemFormArray.controls[i].value);
-      },
-      error: (error: any) => {
-        console.log(error)
-      },
-      complete: () => {
-
-      }
-    })
-  }*/
 
   public deleteClicked(system: System, i: number): void {
     if (confirm(`Are you sure to delete this System: ${system.parameters}?`)) {
