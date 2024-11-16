@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 export class RegisterComponent {
   registerForm: FormGroup;
   isRegisterFormSubmitted: boolean = false;
+  isRegisterValid: boolean = true;
 
   constructor(private accountService: AccountService, private router: Router) {
     this.registerForm = new FormGroup({
@@ -52,6 +53,7 @@ export class RegisterComponent {
       this.accountService.postRegister(this.registerForm.value).subscribe({
         next: (response: any) => {
           console.log(response);
+          this.isRegisterValid = true;
 
           this.accountService.currentUserName = response.email;
           this.isRegisterFormSubmitted = false;
@@ -64,6 +66,7 @@ export class RegisterComponent {
 
         },
         error: (error: any) => {
+          this.isRegisterValid = false;
           console.log(error);
         },
         complete: () => { }

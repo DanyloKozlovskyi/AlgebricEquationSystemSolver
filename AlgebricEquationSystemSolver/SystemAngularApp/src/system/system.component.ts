@@ -29,6 +29,8 @@ export class SystemComponent {
   putSystemForm: FormGroup;
   loading: boolean = false;
 
+  isInputValid: boolean = true;
+
   editId: string | null = null;
 
   tasksInRun: number = 0;
@@ -83,12 +85,10 @@ export class SystemComponent {
       }
     }
 
-    //console.log(this.parameters);
-
     this.postParametersFormArray.clear();
     this.parameters.forEach((param) => {
       this.postParametersFormArray.push(new FormGroup({
-        value: new FormControl(param, [Validators.required])
+        value: new FormControl(param, [Validators.required, Validators.pattern("^-?[0-9]*\.?[0-9]+$")])
       }));
     });
 
@@ -96,17 +96,25 @@ export class SystemComponent {
   }
 
   public async postParametersSubmitted() {
-    console.log(this.tasksInRun)
+    console.log(this.tasksInRun);
+    this.isPostSystemFormSubmitted = true;
     if (this.tasksInRun >= this.maxTasks) {
       alert(`maximum number of tasks was reached, unable to start more tasks`);
       console.log("alert reached");
       return;
     }
-    this.tasksInRun++;
     this.parameters = [];
     this.loading = true;
+    this.isInputValid = true;
 
-    //console.log(`this.postParametersFormArray.length --- ${this.postParametersFormArray.length}`);
+    for (let i = 0; i < this.postParametersFormArray.length; i++) {
+      if (this.postParametersFormArray.at(i).invalid) {
+        this.isInputValid = false;
+        return;
+      }
+    }
+    this.tasksInRun++;
+
     for (let i = 0; i < this.postParametersFormArray.length; i++) {
       let element = this.postParametersFormArray.at(i).value.value as number;
       this.parameters.push(element);
@@ -115,11 +123,6 @@ export class SystemComponent {
     for (let i = 0; i < this.postParametersFormArray.length; i++) {
       this.postParametersFormArray.controls[i].reset(this.postParametersFormArray.controls[i].value);
     }
-
-    console.log(this.parameters);
-
-    ////////
-
     let system = new System(uuid(), this.parameters, null);
 
     this.postSystemSubmitted(system);
@@ -134,9 +137,6 @@ export class SystemComponent {
       next: (response: System[]) => {
         this.systems = response;
 
-        console.log(this.systems);
-        console.log(this.putSystemFormArray);
-
         var parameters = [];
         for (var i = 0; i < this.systems.length; i++) {
           var str = '';
@@ -147,7 +147,6 @@ export class SystemComponent {
             }
           }
         }
-
         this.putSystemFormArray.clear();
 
         this.systems.forEach(system => {
@@ -187,8 +186,6 @@ export class SystemComponent {
   }
 
   public postSystemSubmitted(system: System) {
-    this.isPostSystemFormSubmitted = true;
-
     this.systems.push(system);
     
     this.putSystemFormArray.push(new FormGroup({
@@ -205,6 +202,7 @@ export class SystemComponent {
     //this.postSystemForm.value
     this.systemService.postSystem(system).subscribe({
       next: (response: string | null) => {
+        this.isInputValid = true;
         if (system.id != null) {
           this.monitorProgress(system.id);
         }
@@ -212,6 +210,7 @@ export class SystemComponent {
 
       error: (error: any) => {
         console.log(error);
+        this.isInputValid = false;
       },
       complete: () => { }
     });
@@ -227,10 +226,12 @@ export class SystemComponent {
         this.tasksInRun--;
         this.loadSystems();
         system.destroy$.next();
+        system.destroy$.complete();
         }
       },
       error: (error: any) => {
         system.destroy$.next();
+        system.destroy$.complete();
         console.log(error);
       },
       complete: () => {
@@ -293,7 +294,6 @@ export class SystemComponent {
         next: (response: string) => {
           console.log(`terminate response: ${response}`);
           this.tasksInRun--;
-          //this.editId = null;
 
           this.putSystemFormArray.removeAt(i);
           this.systems.splice(i, 1);
@@ -324,6 +324,7 @@ export class SystemComponent {
     this.roots = this.systems.at(i)?.roots as number[];
     
     this.postRootsFormArray.clear();
+    
 
     if (this.roots != null) {
       this.roots.forEach((param) => {
