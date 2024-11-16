@@ -76,10 +76,10 @@
       <!-- Submit -->
       <div class="form-field flex">
         <div class="w-25">
-
+          <button type="submit" class="button button-green-back">Register</button>
         </div>
         <div class="flex-1">
-          <button type="submit" class="button button-green-back">Register</button>
+          <span class="text-red" *ngIf="!isRegisterValid">Some credentials entered incorrectly</span>
         </div>
       </div>
 

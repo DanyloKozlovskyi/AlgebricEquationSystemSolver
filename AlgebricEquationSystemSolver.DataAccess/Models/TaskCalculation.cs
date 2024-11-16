@@ -25,6 +25,6 @@ namespace AlgebricEquationSystemSolver.DataAccess.Models
 		public virtual AlgebricEquationSystem? System { get; set; } = null;
 
 		[Required]
-		public bool IsCompleted { get; set; }
+		public bool IsCompleted { get; set; } = false;
 	}
 }

@@ -7,6 +7,7 @@ import { SystemService } from '../services/system.service';
 import { LoadingComponent } from '../loading/loading.component';
 import { DisableControlDirective } from '../directives/disabled-control.directive';
 import { v4 as uuid } from 'uuid'
+import { Subject, interval, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-system',
@@ -28,10 +29,13 @@ export class SystemComponent {
   putSystemForm: FormGroup;
   loading: boolean = false;
 
+  isInputValid: boolean = true;
+
   editId: string | null = null;
 
   tasksInRun: number = 0;
   maxTasks: number = 2;
+  destroy$ = new Subject<void>();
 
 
   constructor(private systemService: SystemService, private accountService: AccountService) {
@@ -81,12 +85,10 @@ export class SystemComponent {
       }
     }
 
-    //console.log(this.parameters);
-
     this.postParametersFormArray.clear();
     this.parameters.forEach((param) => {
       this.postParametersFormArray.push(new FormGroup({
-        value: new FormControl(param, [Validators.required])
+        value: new FormControl(param, [Validators.required, Validators.pattern("^-?[0-9]*\.?[0-9]+$")])
       }));
     });
 
@@ -94,17 +96,25 @@ export class SystemComponent {
   }
 
   public async postParametersSubmitted() {
-    console.log(this.tasksInRun)
+    console.log(this.tasksInRun);
+    this.isPostSystemFormSubmitted = true;
     if (this.tasksInRun >= this.maxTasks) {
       alert(`maximum number of tasks was reached, unable to start more tasks`);
       console.log("alert reached");
       return;
     }
-    this.tasksInRun++;
     this.parameters = [];
     this.loading = true;
+    this.isInputValid = true;
 
-    //console.log(`this.postParametersFormArray.length --- ${this.postParametersFormArray.length}`);
+    for (let i = 0; i < this.postParametersFormArray.length; i++) {
+      if (this.postParametersFormArray.at(i).invalid) {
+        this.isInputValid = false;
+        return;
+      }
+    }
+    this.tasksInRun++;
+
     for (let i = 0; i < this.postParametersFormArray.length; i++) {
       let element = this.postParametersFormArray.at(i).value.value as number;
       this.parameters.push(element);
@@ -113,11 +123,6 @@ export class SystemComponent {
     for (let i = 0; i < this.postParametersFormArray.length; i++) {
       this.postParametersFormArray.controls[i].reset(this.postParametersFormArray.controls[i].value);
     }
-
-    console.log(this.parameters);
-
-    ////////
-
     let system = new System(uuid(), this.parameters, null);
 
     this.postSystemSubmitted(system);
@@ -132,9 +137,6 @@ export class SystemComponent {
       next: (response: System[]) => {
         this.systems = response;
 
-        console.log(this.systems);
-        console.log(this.putSystemFormArray);
-
         var parameters = [];
         for (var i = 0; i < this.systems.length; i++) {
           var str = '';
@@ -145,7 +147,6 @@ export class SystemComponent {
             }
           }
         }
-
         this.putSystemFormArray.clear();
 
         this.systems.forEach(system => {
@@ -185,8 +186,6 @@ export class SystemComponent {
   }
 
   public postSystemSubmitted(system: System) {
-    this.isPostSystemFormSubmitted = true;
-
     this.systems.push(system);
     
     this.putSystemFormArray.push(new FormGroup({
@@ -202,58 +201,74 @@ export class SystemComponent {
 
     //this.postSystemForm.value
     this.systemService.postSystem(system).subscribe({
-      next: (response: System | null) => {
-        if (response != null) {
-          this.tasksInRun--;
-          this.roots = response.roots;
-          console.log("this.roots: " + this.roots);
-
-          this.postRootsFormArray.clear();
-
-          if (this.roots != null) {
-            this.roots.forEach((param) => {
-              this.postRootsFormArray.push(new FormGroup({
-                value: new FormControl(param, [Validators.required])
-              }));
-            });
-          }
-
-          this.loading = false;
-
-          this.loadSystems();
+      next: (response: string | null) => {
+        this.isInputValid = true;
+        if (system.id != null) {
+          this.monitorProgress(system.id);
         }
-        //this.cities.push(response);
       },
 
       error: (error: any) => {
         console.log(error);
+        this.isInputValid = false;
       },
-
       complete: () => { }
     });
+  }
+
+  private getTaskProgress(system: System): void {
+    this.systemService.getTaskProgress(system.id).subscribe({
+
+     next: completed => {
+      let isCompleted = completed
+
+      if (isCompleted === true) {
+        this.tasksInRun--;
+        this.loadSystems();
+        system.destroy$.next();
+        system.destroy$.complete();
+        }
+      },
+      error: (error: any) => {
+        system.destroy$.next();
+        system.destroy$.complete();
+        console.log(error);
+      },
+      complete: () => {
+
+      }
+    });
+  }
+
+  private monitorProgress(id: string): void {
+    let system = this.systems.find(x => x.id === id);
+    if (system === undefined) {
+      alert("Some error happened");
+      return;
+    }
+      
+    this.getTaskProgress(system);
+    interval(1000)
+      .pipe(takeUntil(system.destroy$))
+      .subscribe({
+        next: () => {
+          if (system == undefined) {
+            return;
+          }
+          this.getTaskProgress(system);
+        },
+        error: (message: any) => {
+          system?.destroy$.next();
+          console.log(message);
+        },
+        complete: () => {
+        }
+      });
   }
 
   public editClicked(System: System) {
     this.editId = System.id;
   }
-
-  /*public updateClicked(i: number) {
-    this.systemService.putSystem(this.putSystemFormArray.controls[i].value).subscribe({
-      next: (response: string) => {
-        console.log(response);
-        console.log(this.putSystemFormArray.controls[i].value);
-
-        this.editId = null;
-        this.putSystemFormArray.controls[i].reset(this.putSystemFormArray.controls[i].value);
-      },
-      error: (error: any) => {
-        console.log(error)
-      },
-      complete: () => {
-
-      }
-    })
-  }*/
 
   public deleteClicked(system: System, i: number): void {
     if (confirm(`Are you sure to delete this System: ${system.parameters}?`)) {
@@ -279,7 +294,6 @@ export class SystemComponent {
         next: (response: string) => {
           console.log(`terminate response: ${response}`);
           this.tasksInRun--;
-          //this.editId = null;
 
           this.putSystemFormArray.removeAt(i);
           this.systems.splice(i, 1);
@@ -310,6 +324,7 @@ export class SystemComponent {
     this.roots = this.systems.at(i)?.roots as number[];
     
     this.postRootsFormArray.clear();
+    
 
     if (this.roots != null) {
       this.roots.forEach((param) => {

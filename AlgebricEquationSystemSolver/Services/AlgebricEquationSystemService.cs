@@ -5,6 +5,7 @@ using AlgebricEquationSystemSolver.WEBApi.Util;
 using AutoMapper;
 using Elfie.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
@@ -25,29 +26,26 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 			mapper = map.CreateMapper();
 		}
 
-		public async Task<AlgebricEquationSystem> AddSystem(AlgebricEquationSystem? systemCreate)
+		public async Task AddSystem(AlgebricEquationSystem? systemCreate)
 		{
 			if (systemCreate == null)
 				throw new ArgumentNullException(nameof(systemCreate));
 
-			AlgebricEquationSystem system = await MapWithAsync(systemCreate, dbContext);
-			await dbContext.AddAsync(system);
-			await dbContext.SaveChangesAsync();
-			return system;
+			await MapWithAsync(systemCreate, dbContext);
 		}
 
-		public async Task<AlgebricEquationSystem> MapWithAsync(AlgebricEquationSystem source, AlgebricEquationSystemDbContext context)
-
+		public static async Task MapWithAsync(AlgebricEquationSystem source, AlgebricEquationSystemDbContext context)
 		{
 			if (source == null) throw new ArgumentNullException(nameof(source.Parameters));
+			Console.WriteLine("\n\n\nWe entered MapWithAsync\n\n\n");
 			await Task.Run(async () =>
 			{
 				for (int i = 0; i < 20; i++)
 				{
 					Thread.Sleep(500);
 
-					var cancelationToken = await context.CancellationTokenCalculations.FirstOrDefaultAsync(ct => ct.TaskId == source.Id);
-					await context.Entry(cancelationToken).ReloadAsync();
+					var cancelationToken = await context.CancellationTokenCalculations.FirstOrDefaultAsync(ct => ct.TaskId == source.Id).ConfigureAwait(false);
+					await context.Entry(cancelationToken).ReloadAsync().ConfigureAwait(false);
 					// Check for cancellation at the start of each job
 					if (cancelationToken != null && cancelationToken.IsCanceled)
 					{
@@ -57,8 +55,13 @@ namespace AlgebricEquationSystemSolver.WEBApi.Services
 			});
 			source.Roots = AlgebricEquationSystemCreate.FindRoots(source.Parameters);
 			source.IsCompleted = true;
+			//here was addsystems(source)
+			//context.Systems.Update(source);
+			context.Systems.Update(source);
 
-			return source;
+			var task = await context.TaskCalculations.FirstOrDefaultAsync(x => x.SystemId == source.Id).ConfigureAwait(false);
+			task.IsCompleted = true;
+			await context.SaveChangesAsync().ConfigureAwait(false);
 		}
 
 		public async Task<bool> DeleteSystem(Guid? id)

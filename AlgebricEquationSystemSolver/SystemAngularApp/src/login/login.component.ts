@@ -16,6 +16,7 @@ import { LoginUser } from '../models/login-user';
 export class LoginComponent {
   loginForm: FormGroup;
   isLoginFormSubmitted: boolean = false;
+  isLoginValid: boolean = true;
 
   constructor(private accountService: AccountService, private router: Router) {
     this.loginForm = new FormGroup({
@@ -38,6 +39,7 @@ export class LoginComponent {
       this.accountService.postLogin(this.loginForm.value).subscribe({
         next: (response: any) => {
           console.log(response);
+          this.isLoginValid = true;
 
           this.accountService.currentUserName = response.email;
           this.isLoginFormSubmitted = false;
@@ -51,6 +53,7 @@ export class LoginComponent {
         },
         error: (error: any) => {
           console.log(error);
+          this.isLoginValid = false;
         },
         complete: () => { }
       });

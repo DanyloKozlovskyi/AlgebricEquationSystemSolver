@@ -88,13 +88,17 @@
                   <input type="text" formControlName="value" class="form-input-parameter" value="{{row}}" />
                   <span class="text-grey flex-text">+</span>
                 </div>
-              </td>
+              </td>              
             </tr>
+            
             <tr class="table-row">
               <td style="width:200px">
                 <button class="button button-blue-back" (click)="postParametersSubmitted()">
                   Solve
                 </button>
+              </td>
+              <td>
+                <span class="text-red" *ngIf="!isInputValid && isPostSystemFormSubmitted">Incorrect input</span>
               </td>
             </tr>
             <!--<app-loading [isLoading]="loading"></app-loading>-->
